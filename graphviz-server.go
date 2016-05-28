@@ -39,6 +39,7 @@ func handle_get(response http.ResponseWriter, request *http.Request) {
         fmt.Println("An error occurred: ", err)
         return
     }
+    response.Header().Set("Content-type", "image/png")
     fmt.Fprintf(stdin, "%s", graph)
     stdin.Close()
     cmd.Wait()
