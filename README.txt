@@ -13,4 +13,9 @@ curl -s http://localhost:8000/?graph=ZGlncmFwaCBncmFwaG5hbWUgewogICAgYSAtPiBiIC0
 
 This will return a fully-formed PNG image with the graph rendered by graphviz.
 
+You can also POST the graph in plain text in the request body.
+
+To configure the port number that is used, you can either use the --port CLI
+argument, or you can set the GS_PORT environment variable.
+
 This software is released into the public domain without any warranty.
