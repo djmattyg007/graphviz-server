@@ -6,7 +6,9 @@ import (
     "encoding/base64"
     "io/ioutil"
     "net/http"
+    "os"
     "os/exec"
+    "strconv"
 )
 
 func create_img(graph string, response http.ResponseWriter) {
@@ -84,10 +86,25 @@ func handle(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-    portNumber := flag.Int("port", 8000, "Port to listen on")
+    var portNumber int
+    flag.IntVar(&portNumber, "port", 0, "Port to listen on")
     flag.Parse()
+    if portNumber == 0 {
+        portNumberStr := os.Getenv("GS_PORT")
+        if portNumberStr == "" {
+            portNumber = 8000 // The default port number
+        } else {
+            portNumberStrConv, err := strconv.Atoi(portNumberStr)
+            if err == nil {
+                portNumber = portNumberStrConv
+            } else {
+                fmt.Println(err)
+                os.Exit(2)
+            }
+        }
+    }
 
     http.HandleFunc("/", handle)
-    fmt.Println(fmt.Sprintf("Starting webserver on port %d", *portNumber))
-    http.ListenAndServe(fmt.Sprintf(":%d", *portNumber), nil)
+    fmt.Println(fmt.Sprintf("Starting webserver on port %d", portNumber))
+    http.ListenAndServe(fmt.Sprintf(":%d", portNumber), nil)
 }
