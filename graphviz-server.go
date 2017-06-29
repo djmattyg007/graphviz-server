@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
     "fmt"
     "encoding/base64"
     "io/ioutil"
@@ -83,7 +84,10 @@ func handle(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+    portNumber := flag.Int("port", 8000, "Port to listen on")
+    flag.Parse()
+
     http.HandleFunc("/", handle)
-    fmt.Println("Starting webserver")
-    http.ListenAndServe(":8000", nil)
+    fmt.Println(fmt.Sprintf("Starting webserver on port %d", *portNumber))
+    http.ListenAndServe(fmt.Sprintf(":%d", *portNumber), nil)
 }
