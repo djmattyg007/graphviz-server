@@ -3,27 +3,12 @@ package main
 import (
     "fmt"
     "encoding/base64"
+    "io/ioutil"
     "net/http"
     "os/exec"
 )
 
-func handle_get(response http.ResponseWriter, request *http.Request) {
-    graph_encoded := request.URL.Query().Get("graph")
-    if graph_encoded == "" {
-        response.WriteHeader(400)
-        return
-    }
-
-    bgraph, err := base64.URLEncoding.DecodeString(graph_encoded)
-    if err != nil {
-        response.WriteHeader(400)
-        fmt.Fprintf(response, "Error: %s\n", err)
-        return
-    }
-    // I'm not sure why this is the easiest way to convert a byte array to a string
-    graph := fmt.Sprintf("%s", bgraph)
-    fmt.Println(graph)
-
+func create_img(graph string, response http.ResponseWriter) {
     cmd := exec.Command("dot", "-T", "png")
     stdin, err := cmd.StdinPipe()
     if err != nil {
@@ -46,8 +31,59 @@ func handle_get(response http.ResponseWriter, request *http.Request) {
     fmt.Println("done")
 }
 
+func handle_get(response http.ResponseWriter, request *http.Request) {
+    graph_encoded := request.URL.Query().Get("graph")
+    if graph_encoded == "" {
+        response.WriteHeader(400)
+        return
+    }
+
+    bgraph, err := base64.URLEncoding.DecodeString(graph_encoded)
+    if err != nil {
+        response.WriteHeader(400)
+        fmt.Fprintf(response, "Error: %s\n", err)
+        return
+    }
+    // I'm not sure why this is the easiest way to convert a byte array to a string
+    graph := fmt.Sprintf("%s", bgraph)
+    fmt.Println(graph)
+
+    create_img(graph, response)
+}
+
+func handle_post(response http.ResponseWriter, request *http.Request) {
+    bgraph, err := ioutil.ReadAll(request.Body)
+    if err != nil {
+        response.WriteHeader(400)
+        return
+    }
+    // I'm not sure why this is the easiest way to convert a byte array to a string
+    graph := fmt.Sprintf("%s", bgraph)
+    if graph == "" {
+        response.WriteHeader(400)
+        return
+    }
+
+    fmt.Println(graph)
+
+    create_img(graph, response)
+}
+
+func handle(response http.ResponseWriter, request *http.Request) {
+    fmt.Println(request.Method)
+
+    if request.Method == "GET" {
+        handle_get(response, request)
+    } else if request.Method == "POST" {
+        handle_post(response, request)
+    } else {
+        response.WriteHeader(405)
+        response.Header().Set("Allow", "GET, POST")
+    }
+}
+
 func main() {
-    http.HandleFunc("/", handle_get)
+    http.HandleFunc("/", handle)
     fmt.Println("Starting webserver")
     http.ListenAndServe(":8000", nil)
 }
