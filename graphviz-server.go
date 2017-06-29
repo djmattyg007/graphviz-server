@@ -19,7 +19,7 @@ func create_img(graph string, response http.ResponseWriter) {
     defer stdin.Close()
     cmd.Stdout = response
 
-    fmt.Printf("Creating graph...")
+    fmt.Printf("Creating graph... ")
     if err = cmd.Start(); err != nil {
         response.WriteHeader(500)
         fmt.Println("An error occurred: ", err)
